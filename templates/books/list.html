@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Books Management{% endblock %}
+{% block page_title %}Books Management{% endblock %}
+
+{% block content %}
+<div class="table-container animate-fade-in">
+  <!-- Table Header -->
+  <div class="table-header">
+    <h5><i class="fas fa-book me-2 text-accent"></i>All Books</h5>
+    <div class="d-flex align-items-center gap-12 flex-wrap">
+      <!-- Category Filter -->
+      <select class="form-select form-select-sm" id="categoryFilter" style="width: auto; min-width: 160px;">
+        <option value="">All Categories</option>
+        {% for category in categories|default([]) %}
+        <option value="{{ category.name }}">{{ category.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Add Book Button -->
+      <a href="{{ url_for('books.add_book') }}" class="btn btn-primary-gradient btn-sm">
+        <i class="fas fa-plus"></i> Add Book
+      </a>
+    </div>
+  </div>
+
+  <!-- Books Table -->
+  {% if books %}
+  <div class="table-responsive">
+    <table class="table data-table" id="booksTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>ISBN</th>
+          <th>Category</th>
+          <th>Qty</th>
+          <th>Available</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+        <tr>
+          <td>{{ book.id }}</td>
+          <td class="fw-600">{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td><code>{{ book.isbn }}</code></td>
+          <td>
+            <span class="badge bg-light text-dark border">{{ book.category.name if book.category else 'N/A' }}</span>
+          </td>
+          <td>{{ book.quantity }}</td>
+          <td>
+            {% if book.available > 0 %}
+              <span class="badge-status badge-available">{{ book.available }}</span>
+            {% else %}
+              <span class="badge-status badge-unavailable">0</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-8">
+              <a href="{{ url_for('books.edit_book', id=book.id) }}"
+                 class="btn-icon-sm btn-action-edit"
+                 data-bs-toggle="tooltip" title="Edit">
+                <i class="fas fa-pen"></i>
+              </a>
+              <a href="{{ url_for('books.book_qr', id=book.id) }}"
+                 class="btn-icon-sm btn-action-qr"
+                 data-bs-toggle="tooltip" title="QR Code">
+                <i class="fas fa-qrcode"></i>
+              </a>
+              <button type="button"
+                      class="btn-icon-sm btn-action-delete"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteConfirmModal"
+                      data-item-name="{{ book.title }}"
+                      data-delete-url="{{ url_for('books.delete_book', id=book.id) }}"
+                      title="Delete">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-book-open d-block"></i>
+    <h5>No Books Found</h5>
+    <p>Get started by adding your first book to the library.</p>
+    <a href="{{ url_for('books.add_book') }}" class="btn btn-primary-gradient mt-3">
+      <i class="fas fa-plus me-1"></i> Add First Book
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Category filter for DataTable
+  document.addEventListener('DOMContentLoaded', function() {
+    var table = $('#booksTable').DataTable();
+    $('#categoryFilter').on('change', function() {
+      table.column(4).search(this.value).draw();
+    });
+  });
+</script>
+{% endblock %}

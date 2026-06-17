@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="row g-4 animate-fade-in">
+  
+  <!-- Available Books Report Card -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius:12px; overflow:hidden;">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="badge bg-success-subtle text-success p-2 rounded-3">
+              <i class="fas fa-book fa-lg"></i>
+            </span>
+            <div class="text-end">
+              <h3 class="mb-0 fw-800 text-dark">{{ avail_count }}</h3>
+              <small class="text-muted text-uppercase fw-600" style="font-size:0.75rem;">Available</small>
+            </div>
+          </div>
+          <h5 class="card-title fw-700 text-dark mb-2">Available Books</h5>
+          <p class="card-text text-secondary mb-4" style="font-size:0.85rem;">
+            List of all books currently in stock and available for borrowing.
+          </p>
+        </div>
+        <div class="d-flex flex-column gap-2 mt-auto">
+          <a href="{{ url_for('reports.view_report', report_type='available') }}" class="btn btn-outline-primary btn-sm w-100">
+            <i class="fas fa-eye me-1"></i> View Report
+          </a>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('reports.export_pdf', report_type='available') }}" class="btn btn-light btn-sm flex-fill text-danger">
+              <i class="far fa-file-pdf me-1"></i> PDF
+            </a>
+            <a href="{{ url_for('reports.export_excel', report_type='available') }}" class="btn btn-light btn-sm flex-fill text-success">
+              <i class="far fa-file-excel me-1"></i> Excel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issued Books Report Card -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius:12px; overflow:hidden;">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="badge bg-primary-subtle text-primary p-2 rounded-3">
+              <i class="fas fa-clock fa-lg"></i>
+            </span>
+            <div class="text-end">
+              <h3 class="mb-0 fw-800 text-dark">{{ issued_count }}</h3>
+              <small class="text-muted text-uppercase fw-600" style="font-size:0.75rem;">Out Loan</small>
+            </div>
+          </div>
+          <h5 class="card-title fw-700 text-dark mb-2">Issued Books</h5>
+          <p class="card-text text-secondary mb-4" style="font-size:0.85rem;">
+            List of books currently borrowed by students with due dates.
+          </p>
+        </div>
+        <div class="d-flex flex-column gap-2 mt-auto">
+          <a href="{{ url_for('reports.view_report', report_type='issued') }}" class="btn btn-outline-primary btn-sm w-100">
+            <i class="fas fa-eye me-1"></i> View Report
+          </a>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('reports.export_pdf', report_type='issued') }}" class="btn btn-light btn-sm flex-fill text-danger">
+              <i class="far fa-file-pdf me-1"></i> PDF
+            </a>
+            <a href="{{ url_for('reports.export_excel', report_type='issued') }}" class="btn btn-light btn-sm flex-fill text-success">
+              <i class="far fa-file-excel me-1"></i> Excel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue Books Report Card -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius:12px; overflow:hidden;">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="badge bg-danger-subtle text-danger p-2 rounded-3">
+              <i class="fas fa-exclamation-circle fa-lg"></i>
+            </span>
+            <div class="text-end">
+              <h3 class="mb-0 fw-800 text-dark">{{ overdue_count }}</h3>
+              <small class="text-muted text-uppercase fw-600" style="font-size:0.75rem;">Overdue</small>
+            </div>
+          </div>
+          <h5 class="card-title fw-700 text-dark mb-2">Overdue Books</h5>
+          <p class="card-text text-secondary mb-4" style="font-size:0.85rem;">
+            Tracking issued books that have passed their scheduled return date.
+          </p>
+        </div>
+        <div class="d-flex flex-column gap-2 mt-auto">
+          <a href="{{ url_for('reports.view_report', report_type='overdue') }}" class="btn btn-outline-primary btn-sm w-100">
+            <i class="fas fa-eye me-1"></i> View Report
+          </a>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('reports.export_pdf', report_type='overdue') }}" class="btn btn-light btn-sm flex-fill text-danger">
+              <i class="far fa-file-pdf me-1"></i> PDF
+            </a>
+            <a href="{{ url_for('reports.export_excel', report_type='overdue') }}" class="btn btn-light btn-sm flex-fill text-success">
+              <i class="far fa-file-excel me-1"></i> Excel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fines Report Card -->
+  <div class="col-md-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100 card-hover" style="border-radius:12px; overflow:hidden;">
+      <div class="card-body p-4 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="badge bg-warning-subtle text-warning p-2 rounded-3">
+              <i class="fas fa-indian-rupee-sign fa-lg"></i>
+            </span>
+            <div class="text-end">
+              <h3 class="mb-0 fw-800 text-dark">₹{{ "%.2f"|format(total_fines) }}</h3>
+              <small class="text-muted text-uppercase fw-600" style="font-size:0.75rem;">Total Fines</small>
+            </div>
+          </div>
+          <h5 class="card-title fw-700 text-dark mb-2">Fine Collections</h5>
+          <p class="card-text text-secondary mb-4" style="font-size:0.85rem;">
+            Overview of fines applied to overdue books and collected amounts.
+          </p>
+        </div>
+        <div class="d-flex flex-column gap-2 mt-auto">
+          <a href="{{ url_for('reports.view_report', report_type='fines') }}" class="btn btn-outline-primary btn-sm w-100">
+            <i class="fas fa-eye me-1"></i> View Report
+          </a>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('reports.export_pdf', report_type='fines') }}" class="btn btn-light btn-sm flex-fill text-danger">
+              <i class="far fa-file-pdf me-1"></i> PDF
+            </a>
+            <a href="{{ url_for('reports.export_excel', report_type='fines') }}" class="btn btn-light btn-sm flex-fill text-success">
+              <i class="far fa-file-excel me-1"></i> Excel
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

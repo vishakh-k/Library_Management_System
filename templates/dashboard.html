@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards Row -->
+<div class="row g-4 mb-4">
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card blue animate-fade-in animate-fade-in-delay-1">
+      <div class="stat-icon">
+        <i class="fas fa-book"></i>
+      </div>
+      <div class="stat-value">{{ total_books|default(0) }}</div>
+      <div class="stat-label">Total Books</div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card green animate-fade-in animate-fade-in-delay-2">
+      <div class="stat-icon">
+        <i class="fas fa-user-graduate"></i>
+      </div>
+      <div class="stat-value">{{ total_students|default(0) }}</div>
+      <div class="stat-label">Total Students</div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card orange animate-fade-in animate-fade-in-delay-3">
+      <div class="stat-icon">
+        <i class="fas fa-book-open-reader"></i>
+      </div>
+      <div class="stat-value">{{ issued_books|default(0) }}</div>
+      <div class="stat-label">Books Issued</div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="stat-card purple animate-fade-in animate-fade-in-delay-4">
+      <div class="stat-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-value">{{ returned_books|default(0) }}</div>
+      <div class="stat-label">Books Returned</div>
+    </div>
+  </div>
+</div>
+
+<!-- Total Fines Row -->
+<div class="row g-4 mb-4">
+  <div class="col-xl-4 col-md-6">
+    <div class="stat-card pink animate-fade-in">
+      <div class="stat-icon">
+        <i class="fas fa-indian-rupee-sign"></i>
+      </div>
+      <div class="stat-value">₹{{ total_fines|default('0.00') }}</div>
+      <div class="stat-label">Total Fines Collected</div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+  <!-- Doughnut: Books by Category -->
+  <div class="col-xl-5 col-lg-6">
+    <div class="card animate-fade-in">
+      <div class="card-header">
+        <span><i class="fas fa-chart-pie text-accent me-2"></i>Books by Category</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bar: Monthly Trends -->
+  <div class="col-xl-7 col-lg-6">
+    <div class="card animate-fade-in">
+      <div class="card-header">
+        <span><i class="fas fa-chart-bar text-accent me-2"></i>Monthly Issue/Return Trends</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="trendsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+  <div class="col-12">
+    <div class="card animate-fade-in">
+      <div class="card-header">
+        <span><i class="fas fa-clock-rotate-left text-accent me-2"></i>Recent Activity</span>
+        <a href="{{ url_for('issues.list_issues') }}" class="btn btn-sm btn-outline-primary">
+          View All <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_activities %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Book</th>
+                <th>Student</th>
+                <th>Action</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for activity in recent_activities %}
+              <tr>
+                <td class="fw-600">{{ activity.book_title }}</td>
+                <td>{{ activity.student_name }}</td>
+                <td>{{ activity.action }}</td>
+                <td>{{ activity.date }}</td>
+                <td>
+                  <span class="badge-status badge-{{ activity.status|lower }}">
+                    {{ activity.status }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-inbox d-block"></i>
+          <h5>No Recent Activity</h5>
+          <p>Issue or return books to see activity here.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Try fetching from API first, then fall back to template variables
+    fetch('/api/dashboard/stats')
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (data.categories) {
+          renderCategoryChart(data.categories.labels, data.categories.data);
+        }
+        if (data.trends) {
+          renderTrendsChart(data.trends.labels, data.trends.issued, data.trends.returned);
+        }
+      })
+      .catch(function() {
+        // Fallback: render charts with inline data if available
+        {% if category_labels is defined and category_data is defined %}
+        renderCategoryChart(
+          {{ category_labels|tojson }},
+          {{ category_data|tojson }}
+        );
+        {% else %}
+        renderCategoryChart(
+          ['Fiction', 'Science', 'History', 'Technology', 'Other'],
+          [25, 18, 12, 20, 10]
+        );
+        {% endif %}
+
+        {% if trend_labels is defined and trend_issued is defined and trend_returned is defined %}
+        renderTrendsChart(
+          {{ trend_labels|tojson }},
+          {{ trend_issued|tojson }},
+          {{ trend_returned|tojson }}
+        );
+        {% else %}
+        renderTrendsChart(
+          ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          [12, 19, 8, 15, 10, 14],
+          [8, 14, 6, 12, 9, 11]
+        );
+        {% endif %}
+      });
+  });
+</script>
+{% endblock %}

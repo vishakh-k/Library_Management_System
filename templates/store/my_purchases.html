@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}My Purchases{% endblock %}
+{% block page_title %}Purchase History{% endblock %}
+
+{% block content %}
+<div class="table-container animate-fade-in">
+  <!-- Header -->
+  <div class="table-header">
+    <h5><i class="fas fa-receipt me-2 text-accent"></i>My Purchases</h5>
+    <a href="{{ url_for('store.list_books') }}" class="btn btn-primary-gradient btn-sm">
+      <i class="fas fa-shopping-bag"></i> Continue Shopping
+    </a>
+  </div>
+
+  <!-- Purchases Table -->
+  {% if purchases %}
+  <div class="table-responsive">
+    <table class="table" id="purchasesTable">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Book Title</th>
+          <th>ISBN</th>
+          <th>Qty</th>
+          <th>Total Paid</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for purchase in purchases %}
+        <tr>
+          <td class="text-secondary fw-500">
+            {{ purchase.purchase_date.strftime('%d %b %Y, %I:%M %p') if (purchase.purchase_date and purchase.purchase_date.strftime is defined) else purchase.purchase_date }}
+          </td>
+          <td>
+            <div class="fw-600 text-primary">{{ purchase.title }}</div>
+            <div class="text-muted" style="font-size: 0.78rem;">by {{ purchase.author }}</div>
+          </td>
+          <td class="text-secondary">{{ purchase.isbn or 'N/A' }}</td>
+          <td class="fw-600">{{ purchase.quantity }}</td>
+          <td class="fw-700 text-success">₹{{ "%.2f"|format(purchase.price_paid) }}</td>
+          <td>
+            <span class="badge rounded-pill badge-available px-3 py-1" style="font-size: 0.76rem; font-weight: 600;">
+              {{ purchase.status|capitalize }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="py-5 text-center">
+    <div class="py-4">
+      <i class="fas fa-receipt d-block mb-3 text-muted" style="font-size: 3rem;"></i>
+      <h5 class="fw-700 text-primary">No Purchases Yet</h5>
+      <p class="text-secondary mx-auto mb-3" style="max-width: 400px; font-size: 0.9rem;">You haven't bought any books yet. Visit the Book Store to browse and purchase your favorite books.</p>
+      <a href="{{ url_for('store.list_books') }}" class="btn btn-primary-gradient px-4 mt-2">
+        <i class="fas fa-shopping-bag"></i> Browse Books
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

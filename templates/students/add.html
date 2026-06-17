@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Student' if student and student.id is defined else 'Add Student' }}{% endblock %}
+{% block page_title %}{{ 'Edit Student' if student and student.id is defined else 'Register New Student' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-8 col-lg-10">
+    <div class="card animate-fade-in">
+      <div class="card-header">
+        <span>
+          <i class="fas fa-{{ 'pen' if student and student.id is defined else 'user-plus' }} text-accent me-2"></i>
+          {{ 'Edit Student Details' if student and student.id is defined else 'New Student Registration' }}
+        </span>
+        <a href="{{ url_for('students.list_students') }}" class="btn btn-sm btn-light">
+          <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+      </div>
+      <div class="card-body">
+        <form method="POST"
+              action="{{ url_for('students.edit_student', id=student.id) if student and student.id is defined else url_for('students.add_student') }}"
+              class="needs-validation" novalidate>
+          {% if csrf_token is defined %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+
+          <div class="row g-3">
+            <!-- Name -->
+            <div class="col-md-6">
+              <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="name" name="name"
+                     value="{{ student.name if student else '' }}" placeholder="Enter full name" required>
+              <div class="invalid-feedback">Student name is required.</div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="email" name="email"
+                     value="{{ student.email if student else '' }}" placeholder="student@example.com" required>
+              <div class="invalid-feedback">Valid email address is required.</div>
+            </div>
+
+            <!-- Phone -->
+            <div class="col-md-6">
+              <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" id="phone" name="phone"
+                     value="{{ student.phone if student else '' }}" placeholder="Enter phone number" required>
+              <div class="invalid-feedback">Phone number is required.</div>
+            </div>
+
+            <!-- Enrollment No -->
+            <div class="col-md-6">
+              <label for="enrollment_no" class="form-label">Enrollment Number <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="enrollment_no" name="enrollment_no"
+                     value="{{ student.enrollment_no if student else '' }}" placeholder="e.g. EN2024001" required>
+              <div class="invalid-feedback">Enrollment number is required.</div>
+            </div>
+
+            <!-- Department -->
+            <div class="col-md-6">
+              <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="department" name="department"
+                     value="{{ student.department if student else '' }}" placeholder="e.g. Computer Science" required>
+              <div class="invalid-feedback">Department is required.</div>
+            </div>
+
+            <!-- Semester -->
+            <div class="col-md-6">
+              <label for="semester" class="form-label">Semester</label>
+              <input type="number" class="form-control" id="semester" name="semester"
+                     value="{{ student.semester if student else '' }}" placeholder="e.g. 4" min="1" max="10">
+            </div>
+
+            <!-- Address -->
+            <div class="col-12">
+              <label for="address" class="form-label">Address</label>
+              <textarea class="form-control" id="address" name="address" rows="3"
+                        placeholder="Enter full address">{{ student.address if student else '' }}</textarea>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-end gap-12 mt-4 pt-3 border-top">
+            <a href="{{ url_for('students.list_students') }}" class="btn btn-light">
+              <i class="fas fa-times me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary-gradient">
+              <i class="fas fa-{{ 'save' if student and student.id is defined else 'user-plus' }} me-1"></i>
+              {{ 'Update Student' if student and student.id is defined else 'Register Student' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

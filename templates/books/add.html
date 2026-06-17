@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Book' if book and book.id is defined else 'Add Book' }}{% endblock %}
+{% block page_title %}{{ 'Edit Book' if book and book.id is defined else 'Add New Book' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-8 col-lg-10">
+    <div class="card animate-fade-in">
+      <div class="card-header">
+        <span>
+          <i class="fas fa-{{ 'pen' if book and book.id is defined else 'plus-circle' }} text-accent me-2"></i>
+          {{ 'Edit Book Details' if book and book.id is defined else 'Add New Book' }}
+        </span>
+        <a href="{{ url_for('books.list_books') }}" class="btn btn-sm btn-light">
+          <i class="fas fa-arrow-left me-1"></i> Back
+        </a>
+      </div>
+      <div class="card-body">
+        <form method="POST"
+              action="{{ url_for('books.edit_book', id=book.id) if book and book.id is defined else url_for('books.add_book') }}"
+              class="needs-validation" novalidate>
+          {% if csrf_token is defined %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+
+          <div class="row g-3">
+            <!-- Title -->
+            <div class="col-md-6">
+              <label for="title" class="form-label">Book Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="title" name="title"
+                     value="{{ book.title if book else '' }}" placeholder="Enter book title" required>
+              <div class="invalid-feedback">Book title is required.</div>
+            </div>
+
+            <!-- Author -->
+            <div class="col-md-6">
+              <label for="author" class="form-label">Author <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="author" name="author"
+                     value="{{ book.author if book else '' }}" placeholder="Enter author name" required>
+              <div class="invalid-feedback">Author name is required.</div>
+            </div>
+
+            <!-- ISBN -->
+            <div class="col-md-6">
+              <label for="isbn" class="form-label">ISBN <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="isbn" name="isbn"
+                     value="{{ book.isbn if book else '' }}" placeholder="e.g. 978-3-16-148410-0" required>
+              <div class="invalid-feedback">ISBN is required.</div>
+            </div>
+
+            <!-- Publisher -->
+            <div class="col-md-6">
+              <label for="publisher" class="form-label">Publisher</label>
+              <input type="text" class="form-control" id="publisher" name="publisher"
+                     value="{{ book.publisher if book else '' }}" placeholder="Enter publisher name">
+            </div>
+
+            <!-- Category -->
+            <div class="col-md-6">
+              <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
+              <select class="form-select" id="category_id" name="category_id" required>
+                <option value="">Select Category</option>
+                {% for category in categories|default([]) %}
+                <option value="{{ category.id }}"
+                  {{ 'selected' if book and book.category_id == category.id else '' }}>
+                  {{ category.name }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Please select a category.</div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="col-md-3">
+              <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="quantity" name="quantity"
+                     value="{{ book.quantity if book else 1 }}" min="1" required>
+              <div class="invalid-feedback">Quantity must be at least 1.</div>
+            </div>
+
+            <!-- Shelf Location -->
+            <div class="col-md-3">
+              <label for="shelf_location" class="form-label">Shelf Location</label>
+              <input type="text" class="form-control" id="shelf_location" name="shelf_location"
+                     value="{{ book.shelf_location if book else '' }}" placeholder="e.g. A-12">
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-end gap-12 mt-4 pt-3 border-top">
+            <a href="{{ url_for('books.list_books') }}" class="btn btn-light">
+              <i class="fas fa-times me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary-gradient">
+              <i class="fas fa-{{ 'save' if book and book.id is defined else 'plus' }} me-1"></i>
+              {{ 'Update Book' if book and book.id is defined else 'Add Book' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

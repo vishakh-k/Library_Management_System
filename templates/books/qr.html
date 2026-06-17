@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}QR Code — {{ book.title }}{% endblock %}
+{% block page_title %}QR Code{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-6 col-lg-8">
+    <div class="card animate-fade-in">
+      <div class="card-body qr-card">
+        <!-- Book Info -->
+        <div class="book-title">{{ book.title }}</div>
+        <div class="book-detail mb-1">
+          <i class="fas fa-user me-1"></i> {{ book.author }}
+        </div>
+        <div class="book-detail mb-1">
+          <i class="fas fa-barcode me-1"></i> ISBN: {{ book.isbn }}
+        </div>
+        {% if book.category %}
+        <div class="book-detail">
+          <i class="fas fa-tag me-1"></i> {{ book.category.name }}
+        </div>
+        {% endif %}
+
+        <!-- QR Code Image -->
+        <div class="my-4">
+          {% if book.qr_code %}
+          <img src="data:image/png;base64,{{ book.qr_code }}" alt="QR Code for {{ book.title }}" class="img-fluid">
+          {% else %}
+          <div class="empty-state py-4">
+            <i class="fas fa-qrcode d-block"></i>
+            <h5>QR Code Not Generated</h5>
+            <p>No QR code is available for this book.</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-center gap-12">
+          <a href="{{ url_for('books.list_books') }}" class="btn btn-light">
+            <i class="fas fa-arrow-left me-1"></i> Back to Books
+          </a>
+          {% if book.qr_code %}
+          <button onclick="window.print()" class="btn btn-primary-gradient">
+            <i class="fas fa-print me-1"></i> Print QR Code
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

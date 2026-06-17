@@ -1,0 +1,66 @@
+# ==============================================================================
+# gunicorn.service – Systemd unit for Library Management System
+#
+# Installation:
+#   sudo cp deployment/gunicorn.service /etc/systemd/system/library-management.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable library-management
+#   sudo systemctl start  library-management
+#
+# Logs:
+#   sudo journalctl -u library-management -f
+# ==============================================================================
+
+[Unit]
+Description=Library Management System – Gunicorn WSGI Server
+Documentation=https://docs.gunicorn.org/en/stable/
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=notify
+User=ubuntu
+Group=www-data
+
+# Application directory
+WorkingDirectory=/home/ubuntu/library-management-system
+
+# Load environment variables (.env must contain SECRET_KEY, MYSQL_*, etc.)
+EnvironmentFile=/home/ubuntu/library-management-system/.env
+
+# Launch Gunicorn using the project's virtual environment
+ExecStart=/home/ubuntu/library-management-system/venv/bin/gunicorn \
+    --config deployment/gunicorn.conf.py \
+    'app:create_app()'
+
+# Graceful reload (HUP signals Gunicorn to re-exec)
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# Kill remaining processes after stop
+KillMode=mixed
+
+# Restart policy
+Restart=always
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Security hardening
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/library-management-system/logs
+
+# Resource limits
+LimitNOFILE=65536
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Standard output / error → journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=library-management
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,62 @@
+# ==============================================================================
+# .dockerignore – Library Management System
+# Exclude files from Docker build context to speed up builds & reduce image size
+# ==============================================================================
+
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+*.egg-info/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# CI/CD
+Jenkinsfile
+.github/
+
+# Documentation
+*.md
+LICENSE
+docs/
+
+# Tests (not needed in production image)
+tests/
+pytest.ini
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Backups
+backups/
+*.sql.gz

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout — {{ book.title }}{% endblock %}
+{% block page_title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+  <div class="col-12 col-lg-10 col-xl-8">
+    <div class="card border-0 shadow-lg" style="border-radius: var(--border-radius); overflow: hidden;">
+      <div class="row g-0">
+        
+        <!-- Left Side: Product Summary -->
+        <div class="col-12 col-md-5 d-flex flex-column justify-content-between p-4 p-lg-5 text-white" style="background: linear-gradient(135deg, var(--sidebar-dark), var(--sidebar-darker)); min-height: 320px;">
+          <div>
+            <div class="mb-4">
+              <a href="{{ url_for('store.list_books') }}" class="text-white-50 d-inline-flex align-items-center gap-2" style="font-size: 0.85rem; text-decoration: none; transition: color 0.15s;">
+                <i class="fas fa-chevron-left"></i> Back to Store
+              </a>
+            </div>
+            
+            <div class="text-center my-4">
+              <div class="d-inline-flex align-items-center justify-content-center rounded-3 mb-3" style="width: 80px; height: 110px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                <i class="fas fa-book-open" style="font-size: 2.5rem; color: var(--accent);"></i>
+              </div>
+            </div>
+            
+            <h4 class="fw-700 text-center text-white mb-2" style="font-size: 1.35rem; line-height: 1.4;">{{ book.title }}</h4>
+            <p class="text-white-50 text-center mb-0" style="font-size: 0.9rem;">by {{ book.author }}</p>
+          </div>
+          
+          <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+            <div class="d-flex justify-content-between mb-2" style="font-size: 0.82rem; color: rgba(255,255,255,0.6);">
+              <span>Category:</span>
+              <strong class="text-white">{{ book.category_name or 'Uncategorized' }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2" style="font-size: 0.82rem; color: rgba(255,255,255,0.6);">
+              <span>ISBN:</span>
+              <strong class="text-white">{{ book.isbn or 'N/A' }}</strong>
+            </div>
+            <div class="d-flex justify-content-between" style="font-size: 0.82rem; color: rgba(255,255,255,0.6);">
+              <span>Shelf Location:</span>
+              <strong class="text-white">{{ book.shelf_location or 'N/A' }}</strong>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Side: Checkout Form -->
+        <div class="col-12 col-md-7 p-4 p-lg-5 bg-white d-flex flex-column justify-content-between">
+          <div>
+            <h3 class="fw-800 text-primary mb-1" style="font-size: 1.6rem; letter-spacing: -0.02em;">Order Summary</h3>
+            <p class="text-secondary mb-4" style="font-size: 0.88rem;">Complete your purchase by specifying details below.</p>
+            
+            <form id="checkoutForm" method="POST" action="{{ url_for('store.checkout', id=book.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+              
+              <!-- Unit Price Display -->
+              <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded-3" style="border: 1px solid #f1f5f9;">
+                <div>
+                  <span class="text-secondary d-block" style="font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Unit Price</span>
+                  <span class="fw-800 text-primary" style="font-size: 1.4rem;">₹{{ "%.2f"|format(book.price) }}</span>
+                </div>
+                <div class="text-end">
+                  <span class="text-secondary d-block" style="font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Availability</span>
+                  <span class="badge rounded-pill bg-success-light text-success px-3 py-1" style="font-size: 0.8rem; font-weight: 600;">{{ book.available }} copies left</span>
+                </div>
+              </div>
+
+              <!-- Quantity Selector -->
+              <div class="mb-4">
+                <label for="quantity" class="form-label fw-600 text-secondary" style="font-size: 0.88rem;">Quantity</label>
+                <div class="input-group" style="max-width: 160px;">
+                  <button class="btn btn-outline-secondary px-3" type="button" id="btnMinus" style="border-color: #cbd5e1 !important; color: var(--text-primary);">
+                    <i class="fas fa-minus" style="font-size: 0.8rem;"></i>
+                  </button>
+                  <input type="number" id="quantity" name="quantity" class="form-control text-center fw-600" value="1" min="1" max="{{ book.available }}" style="border-color: #cbd5e1; font-size: 0.95rem;" required>
+                  <button class="btn btn-outline-secondary px-3" type="button" id="btnPlus" style="border-color: #cbd5e1 !important; color: var(--text-primary);">
+                    <i class="fas fa-plus" style="font-size: 0.8rem;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pricing Calculation Breakdown -->
+              <div class="py-3 border-top border-bottom border-light mb-4" style="border-color: #f1f5f9 !important;">
+                <div class="d-flex justify-content-between mb-2 text-secondary" style="font-size: 0.88rem;">
+                  <span>Subtotal</span>
+                  <span id="subtotalDisplay">₹{{ "%.2f"|format(book.price) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 text-secondary" style="font-size: 0.88rem;">
+                  <span>Tax (GST 18% - Included)</span>
+                  <span id="taxDisplay">₹0.00</span>
+                </div>
+                <div class="d-flex justify-content-between pt-2 fw-700 text-primary border-top" style="border-color: #f8fafc !important; font-size: 1.1rem;">
+                  <span>Total Amount</span>
+                  <span id="totalDisplay" style="color: var(--accent);">₹{{ "%.2f"|format(book.price) }}</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary-gradient w-100 justify-content-center py-3 rounded-3 shadow">
+                <i class="fas fa-check-circle"></i> Confirm Purchase
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Simple calculation JS to make page alive -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const price = {{ book.price }};
+    const available = {{ book.available }};
+    const quantityInput = document.getElementById('quantity');
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    
+    const subtotalDisplay = document.getElementById('subtotalDisplay');
+    const taxDisplay = document.getElementById('taxDisplay');
+    const totalDisplay = document.getElementById('totalDisplay');
+    
+    function calculateTotal() {
+      let qty = parseInt(quantityInput.value) || 1;
+      if (qty < 1) {
+        qty = 1;
+        quantityInput.value = 1;
+      }
+      if (qty > available) {
+        qty = available;
+        quantityInput.value = available;
+      }
+      
+      const subtotal = price * qty;
+      // GST is 18% included
+      const tax = subtotal * (18 / 118);
+      const subtotalMinusTax = subtotal - tax;
+      
+      subtotalDisplay.innerText = '₹' + subtotalMinusTax.toFixed(2);
+      taxDisplay.innerText = '₹' + tax.toFixed(2);
+      totalDisplay.innerText = '₹' + subtotal.toFixed(2);
+    }
+    
+    btnMinus.addEventListener('click', function() {
+      let currentVal = parseInt(quantityInput.value) || 1;
+      if (currentVal > 1) {
+        quantityInput.value = currentVal - 1;
+        calculateTotal();
+      }
+    });
+    
+    btnPlus.addEventListener('click', function() {
+      let currentVal = parseInt(quantityInput.value) || 1;
+      if (currentVal < available) {
+        quantityInput.value = currentVal + 1;
+        calculateTotal();
+      }
+    });
+    
+    quantityInput.addEventListener('input', calculateTotal);
+    quantityInput.addEventListener('change', calculateTotal);
+    
+    // Initial run
+    calculateTotal();
+  });
+</script>
+{% endblock %}

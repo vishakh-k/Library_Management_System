@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Issue / Return{% endblock %}
+{% block page_title %}Issue / Return Management{% endblock %}
+
+{% block content %}
+<div class="table-container animate-fade-in">
+  <!-- Table Header -->
+  <div class="table-header">
+    <h5><i class="fas fa-right-left me-2 text-accent"></i>All Transactions</h5>
+    <div class="d-flex align-items-center gap-12 flex-wrap">
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="issued">
+          <i class="fas fa-clock me-1"></i> Issued
+        </button>
+        <button class="filter-btn" data-filter="returned">
+          <i class="fas fa-check me-1"></i> Returned
+        </button>
+        <button class="filter-btn" data-filter="overdue">
+          <i class="fas fa-exclamation-triangle me-1"></i> Overdue
+        </button>
+      </div>
+
+      <!-- Issue Book Button -->
+      <a href="{{ url_for('issues.issue_book') }}" class="btn btn-primary-gradient btn-sm">
+        <i class="fas fa-plus"></i> Issue Book
+      </a>
+    </div>
+  </div>
+
+  <!-- Issues Table -->
+  {% if issues %}
+  <div class="table-responsive">
+    <table class="table data-table" id="issuesTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Book Title</th>
+          <th>Student</th>
+          <th>Issue Date</th>
+          <th>Due Date</th>
+          <th>Return Date</th>
+          <th>Fine</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for issue in issues %}
+        <tr class="filterable-row" data-status="{{ issue.status|lower }}">
+          <td>{{ issue.id }}</td>
+          <td class="fw-600">{{ issue.book.title if issue.book else 'N/A' }}</td>
+          <td>{{ issue.student.name if issue.student else 'N/A' }}</td>
+          <td>{{ issue.issue_date.strftime('%d %b %Y') if issue.issue_date else 'N/A' }}</td>
+          <td>{{ issue.due_date.strftime('%d %b %Y') if issue.due_date else 'N/A' }}</td>
+          <td>{{ issue.return_date.strftime('%d %b %Y') if issue.return_date else '—' }}</td>
+          <td>
+            {% if issue.fine and issue.fine > 0 %}
+              <span class="text-danger fw-600">₹{{ issue.fine }}</span>
+            {% else %}
+              <span class="text-muted">₹0</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if issue.status == 'issued' %}
+              <span class="badge-status badge-issued">Issued</span>
+            {% elif issue.status == 'returned' %}
+              <span class="badge-status badge-returned">Returned</span>
+            {% elif issue.status == 'overdue' %}
+              <span class="badge-status badge-overdue">Overdue</span>
+            {% else %}
+              <span class="badge-status badge-issued">{{ issue.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if issue.status == 'issued' or issue.status == 'overdue' %}
+            <a href="{{ url_for('issues.return_book', id=issue.id) }}"
+               class="btn btn-sm btn-outline-primary"
+               onclick="return confirm('Confirm return of this book?')">
+              <i class="fas fa-undo me-1"></i> Return
+            </a>
+            {% else %}
+            <span class="text-muted" style="font-size:0.85rem;">
+              <i class="fas fa-check-circle me-1"></i> Completed
+            </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-right-left d-block"></i>
+    <h5>No Transactions Found</h5>
+    <p>Issue books to students to see transactions here.</p>
+    <a href="{{ url_for('issues.issue_book') }}" class="btn btn-primary-gradient mt-3">
+      <i class="fas fa-plus me-1"></i> Issue First Book
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

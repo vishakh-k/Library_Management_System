@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.name }} — Profile{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Profile Card -->
+  <div class="col-xl-4 col-lg-5">
+    <div class="profile-card animate-fade-in">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          {{ student.name[0]|upper if student.name else 'S' }}
+        </div>
+        <div class="profile-name">{{ student.name }}</div>
+        <div style="opacity:0.8; font-size:0.9rem;">{{ student.enrollment_no }}</div>
+      </div>
+
+      <div class="profile-detail">
+        <div class="detail-label">Email</div>
+        <div class="detail-value">
+          <a href="mailto:{{ student.email }}">{{ student.email }}</a>
+        </div>
+      </div>
+
+      <div class="profile-detail">
+        <div class="detail-label">Phone</div>
+        <div class="detail-value">{{ student.phone }}</div>
+      </div>
+
+      <div class="profile-detail">
+        <div class="detail-label">Department</div>
+        <div class="detail-value">{{ student.department }}</div>
+      </div>
+
+      <div class="profile-detail">
+        <div class="detail-label">Semester</div>
+        <div class="detail-value">{{ student.semester|default('N/A') }}</div>
+      </div>
+
+      {% if student.address %}
+      <div class="profile-detail">
+        <div class="detail-label">Address</div>
+        <div class="detail-value">{{ student.address }}</div>
+      </div>
+      {% endif %}
+
+      <div class="p-3">
+        <a href="{{ url_for('students.edit_student', id=student.id) }}" class="btn btn-primary-gradient w-100">
+          <i class="fas fa-pen me-1"></i> Edit Profile
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issued Books History -->
+  <div class="col-xl-8 col-lg-7">
+    <div class="card animate-fade-in">
+      <div class="card-header">
+        <span><i class="fas fa-history text-accent me-2"></i>Book Issue History</span>
+        <span class="badge bg-light text-dark border">
+          {{ issues|length if issues else 0 }} Records
+        </span>
+      </div>
+      <div class="card-body p-0">
+        {% if issues %}
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th>Book Title</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th>Return Date</th>
+                <th>Fine</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for issue in issues %}
+              <tr>
+                <td class="fw-600">{{ issue.book.title if issue.book else 'N/A' }}</td>
+                <td>{{ issue.issue_date.strftime('%d %b %Y') if issue.issue_date else 'N/A' }}</td>
+                <td>{{ issue.due_date.strftime('%d %b %Y') if issue.due_date else 'N/A' }}</td>
+                <td>{{ issue.return_date.strftime('%d %b %Y') if issue.return_date else '—' }}</td>
+                <td>
+                  {% if issue.fine and issue.fine > 0 %}
+                    <span class="text-danger fw-600">₹{{ issue.fine }}</span>
+                  {% else %}
+                    <span class="text-muted">₹0</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if issue.status == 'issued' %}
+                    <span class="badge-status badge-issued">Issued</span>
+                  {% elif issue.status == 'returned' %}
+                    <span class="badge-status badge-returned">Returned</span>
+                  {% elif issue.status == 'overdue' %}
+                    <span class="badge-status badge-overdue">Overdue</span>
+                  {% else %}
+                    <span class="badge-status badge-issued">{{ issue.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state py-5">
+          <i class="fas fa-book-open d-block"></i>
+          <h5>No Books Issued</h5>
+          <p>This student hasn't borrowed any books yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
