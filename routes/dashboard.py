@@ -16,7 +16,6 @@ def limit_to_admin():
     if current_user.role != 'admin':
         abort(403)
 
-@dashboard_bp.route('/')
 @dashboard_bp.route('/dashboard')
 @login_required
 def index():
