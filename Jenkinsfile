@@ -7,10 +7,19 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE    = 'library-management-system'
-        DOCKER_TAG      = "${env.BUILD_NUMBER}"
-        COMPOSE_PROJECT = 'lms'
-        APP_URL         = 'http://localhost'
+        DOCKER_IMAGE       = 'library-management-system'
+        DOCKER_TAG         = "${env.BUILD_NUMBER}"
+        COMPOSE_PROJECT    = 'lms'
+        
+        // AWS ECR Configuration
+        AWS_ACCOUNT_ID     = '035842753174'
+        AWS_DEFAULT_REGION = 'ap-southeast-2'
+        ECR_REGISTRY       = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+        
+        // AWS EC2 Configuration
+        EC2_IP             = "${env.EC2_IP ?: '127.0.0.1'}"
+        EC2_USER           = 'ubuntu'
+        APP_URL            = "http://${EC2_IP}"
     }
 
     options {
@@ -96,32 +105,65 @@ pipeline {
                     docker build \
                         -t ${DOCKER_IMAGE}:${DOCKER_TAG} \
                         -t ${DOCKER_IMAGE}:latest \
+                        -t ${ECR_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} \
+                        -t ${ECR_REGISTRY}/${DOCKER_IMAGE}:latest \
                         .
                 """
             }
         }
 
         // -----------------------------------------------------------------
-        // Stage 6 – Tear down previous deployment
+        // Stage 6 – Push to AWS ECR
         // -----------------------------------------------------------------
-        stage('Stop Old Containers') {
+        stage('Push to ECR') {
             steps {
-                echo '🛑  Stopping old containers…'
-                sh '''
-                    docker-compose -p ${COMPOSE_PROJECT} down --remove-orphans || true
-                '''
+                echo '🔓  Logging in to AWS ECR…'
+                sh 'aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}'
+                
+                echo '📤  Pushing images to ECR…'
+                sh """
+                    docker push ${ECR_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                    docker push ${ECR_REGISTRY}/${DOCKER_IMAGE}:latest
+                """
             }
         }
 
         // -----------------------------------------------------------------
-        // Stage 7 – Deploy with Docker Compose
+        // Stage 7 – Deploy to EC2
         // -----------------------------------------------------------------
-        stage('Deploy') {
+        stage('Deploy to EC2') {
             steps {
-                echo '🚀  Deploying application…'
-                sh '''
-                    docker-compose -p ${COMPOSE_PROJECT} up -d --build
-                '''
+                echo '🚀  Deploying application to remote EC2 host…'
+                sshagent(['ec2-ssh-key']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} "
+                            # Log in to AWS ECR on EC2
+                            aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                            
+                            # Navigate or clone project repo on EC2
+                            cd /home/${EC2_USER}/library-management-system || mkdir -p /home/${EC2_USER}/library-management-system && cd /home/${EC2_USER}/library-management-system
+                            
+                            # Update config files on EC2 from Git
+                            git init || true
+                            git remote remove origin || true
+                            git remote add origin https://github.com/vishakh-k/Library_Management_System.git || true
+                            git fetch --all
+                            git reset --hard origin/main
+                            
+                            # Export configurations
+                            export ECR_REGISTRY=${ECR_REGISTRY}
+                            export DOCKER_IMAGE=${DOCKER_IMAGE}
+                            export DOCKER_TAG=${DOCKER_TAG}
+                            
+                            # Pull the latest image
+                            docker compose -f docker-compose.prod.yml pull
+                            
+                            # Restart services
+                            docker compose -f docker-compose.prod.yml -p ${COMPOSE_PROJECT} down --remove-orphans || true
+                            docker compose -f docker-compose.prod.yml -p ${COMPOSE_PROJECT} up -d
+                        "
+                    '''
+                }
             }
         }
 

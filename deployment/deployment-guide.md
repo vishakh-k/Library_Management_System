@@ -637,6 +637,45 @@ docker compose restart web
 
 ---
 
+## AWS ECR & Jenkins Pipeline Integration
+
+This section explains how to configure AWS and Jenkins to support the ECR container registry and remote EC2 deployments.
+
+### 1. Create AWS ECR Repository
+Log in to your AWS Console and navigate to **Elastic Container Registry (ECR)**:
+1. Click **Create Repository**.
+2. Select **Private**.
+3. Name the repository: `library-management-system`.
+4. Click **Create Repository**.
+
+### 2. Configure AWS IAM User for Jenkins
+In AWS Console, navigate to **IAM (Identity and Access Management)**:
+1. Create a new IAM User (e.g., `jenkins-deployer`).
+2. Attach the **AmazonEC2ContainerRegistryPowerUser** policy directly to allow the user to read and write images to ECR.
+3. Generate an **Access Key ID** and **Secret Access Key** under the user's Security Credentials tab.
+
+### 3. Store Credentials in Jenkins Credentials Manager
+Navigate to your **Jenkins Dashboard → Manage Jenkins → Credentials → System → Global credentials**:
+
+#### 3.1 AWS Credentials
+* **Kind**: AWS Credentials (or two standard Secret Text credentials if the AWS credentials plugin is not installed)
+* **ID**: `aws-credentials`
+* **Access Key ID**: `YOUR_AWS_ACCESS_KEY_ID`
+* **Secret Access Key**: `YOUR_AWS_SECRET_ACCESS_KEY`
+
+#### 3.2 EC2 SSH Credentials
+* **Kind**: SSH Username with private key
+* **ID**: `ec2-ssh-key`
+* **Username**: `ubuntu`
+* **Private Key**: Paste the contents of your `.pem` key pair file used to launch the EC2 instance.
+
+### 4. Deploying to EC2 Host
+1. Make sure your EC2 Instance has Docker and Git installed.
+2. In the Jenkins Pipeline Job settings, add an environment variable `EC2_IP` containing the Elastic IP of your EC2 instance.
+3. When you push to the `main` branch, the pipeline will build the image, push it to AWS ECR, SSH into your EC2 host, and start the services using `docker-compose.prod.yml`.
+
+---
+
 ## Security Checklist
 
 - [ ] Change default `SECRET_KEY` in `.env`
@@ -653,3 +692,4 @@ docker compose restart web
 ---
 
 *End of deployment guide.*
+
