@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Institute Library Management System – Search books, view catalogue, manage loans.">
+  <title>Library Management System – Welcome</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+  <!-- Custom Landing Stylesheet -->
+  <link href="{{ url_for('static', filename='css/landing.css') }}" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== Header & Navigation ===== -->
+  <nav class="navbar navbar-expand-lg navbar-landing sticky-top">
+    <div class="container">
+      <a class="navbar-brand-landing" href="{{ url_for('index') }}">
+        <i class="fas fa-book-open"></i>
+        <span>Library</span>MS
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars text-secondary" style="font-size: 1.25rem;"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
+          <li class="nav-item">
+            <a class="nav-link-landing" href="#catalog">Book Catalogue</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-landing" href="#features">Key Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-landing" href="#arrivals">New Arrivals</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-landing" href="#info">Library Info</a>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <a href="{{ url_for('auth.login') }}" class="btn-secondary-landing">Login</a>
+          <a href="{{ url_for('auth.register') }}" class="btn-primary-landing">Register</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages Container -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container mt-4">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' or category == 'error' %}exclamation-circle{% elif category == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ===== Hero Section ===== -->
+  <header class="hero-landing">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <h1 class="hero-title">Discover Knowledge,<br>Empower Your Learning</h1>
+          <p class="hero-subtitle">Welcome to the Institute Library Portal. Search our extensive catalog of books, journals, and digital assets, manage your loans, and access study spaces online.</p>
+          
+          <!-- Direct Catalog Search Bar -->
+          <div class="search-container-landing" id="catalog">
+            <form action="{{ url_for('index') }}#catalog" method="GET" class="row g-0 align-items-center">
+              <div class="col">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-search text-muted ms-3" style="font-size: 1.1rem;"></i>
+                  <input type="text" name="search" class="form-control search-input-landing" placeholder="Search by book title, author, or ISBN..." value="{{ search|default('') }}">
+                </div>
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn-search-landing">Search Catalogue</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Library Stats Section ===== -->
+  <section class="stats-section-landing">
+    <div class="container">
+      <div class="row g-4 justify-content-center">
+        <div class="col-sm-6 col-md-3">
+          <div class="stats-card-landing">
+            <div class="stats-icon-wrapper">
+              <i class="fas fa-book"></i>
+            </div>
+            <div>
+              <div class="stats-number">{{ stats.total_books|default('0') }}</div>
+              <div class="stats-label">Total Volumes</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+          <div class="stats-card-landing">
+            <div class="stats-icon-wrapper">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+              <div class="stats-number">{{ stats.available_books|default('0') }}</div>
+              <div class="stats-label">Available Copies</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+          <div class="stats-card-landing">
+            <div class="stats-icon-wrapper">
+              <i class="fas fa-tags"></i>
+            </div>
+            <div>
+              <div class="stats-number">{{ stats.total_categories|default('0') }}</div>
+              <div class="stats-label">Categories</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+          <div class="stats-card-landing">
+            <div class="stats-icon-wrapper">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+            <div>
+              <div class="stats-number">{{ stats.total_students|default('0') }}</div>
+              <div class="stats-label">Active Members</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Catalog Search Results ===== -->
+  {% if search %}
+    <section class="py-5 bg-white border-bottom mt-4">
+      <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="section-title mb-0">Search Results for "{{ search }}"</h2>
+          <a href="{{ url_for('index') }}#catalog" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;">Clear Search</a>
+        </div>
+        
+        {% if books %}
+          <div class="row g-4">
+            {% for book in books %}
+              <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="book-card-landing">
+                  <div class="book-cover-placeholder">
+                    <span class="book-cover-category">{{ book.category_name|default('General') }}</span>
+                    <i class="fas fa-book-open"></i>
+                    <div class="small fw-bold">{{ book.isbn }}</div>
+                  </div>
+                  <div class="book-card-body">
+                    <h5 class="book-title-landing" title="{{ book.title }}">{{ book.title }}</h5>
+                    <div class="book-author-landing">by {{ book.author }}</div>
+                    
+                    <div class="book-card-footer">
+                      {% if book.available > 0 %}
+                        <span class="book-badge-stock badge-instock">
+                          <i class="fas fa-circle-check me-1"></i> Available ({{ book.available }})
+                        </span>
+                      {% else %}
+                        <span class="book-badge-stock badge-outstock">
+                          <i class="fas fa-circle-xmark me-1"></i> Out of Stock
+                        </span>
+                      {% endif %}
+                      <div class="book-price">${{ "%.2f"|format(book.price) }}</div>
+                    </div>
+                    <div class="mt-3">
+                      <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100 py-2" style="border-radius: 8px; font-weight: 600;">
+                        Log In to Borrow
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-search-minus text-muted mb-3" style="font-size: 3rem;"></i>
+            <h4>No books found matching your search.</h4>
+            <p class="text-muted">Please check the spelling or try searching for another keyword/category.</p>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- ===== Key Services ===== -->
+  <section class="py-5" id="features" style="margin-top: 4rem;">
+    <div class="container py-5">
+      <h2 class="section-title section-title-center">Library Key Services</h2>
+      <p class="text-center text-muted mx-auto mb-5" style="max-width: 600px;">Our platform is custom-built to manage a modern institute library environment, providing students and administrators with essential tools.</p>
+      
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="feature-card-landing">
+            <div class="feature-icon-wrapper">
+              <i class="fas fa-globe"></i>
+            </div>
+            <h4>24/7 Digital Catalog</h4>
+            <p class="text-muted">Access our entire volume catalog and check real-time copy availability from any device, anywhere, anytime.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card-landing">
+            <div class="feature-icon-wrapper">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <h4>Online Reservation</h4>
+            <p class="text-muted">Log in to reserve your books online. Pick them up at the counter once you receive your ready notification email.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card-landing">
+            <div class="feature-icon-wrapper">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h4>Due Reminders</h4>
+            <p class="text-muted">Avoid fines with automated email alerts and notifications before your books are due for return.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== New Arrivals Section ===== -->
+  <section class="py-5 bg-white border-top border-bottom" id="arrivals">
+    <div class="container py-5">
+      <h2 class="section-title section-title-center">New Arrivals</h2>
+      <p class="text-center text-muted mx-auto mb-5" style="max-width: 600px;">Explore the latest additions to our shelves this semester. Log in to reserve your copies today.</p>
+      
+      <div class="row g-4">
+        {% if arrivals %}
+          {% for book in arrivals %}
+            <div class="col-sm-6 col-md-4 col-lg-3">
+              <div class="book-card-landing">
+                <div class="book-cover-placeholder" style="background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-dark) 100%);">
+                  <span class="book-cover-category">{{ book.category_name|default('General') }}</span>
+                  <i class="fas fa-book"></i>
+                  <div class="small fw-bold">{{ book.isbn }}</div>
+                </div>
+                <div class="book-card-body">
+                  <h5 class="book-title-landing" title="{{ book.title }}">{{ book.title }}</h5>
+                  <div class="book-author-landing">by {{ book.author }}</div>
+                  
+                  <div class="book-card-footer">
+                    {% if book.available > 0 %}
+                      <span class="book-badge-stock badge-instock">
+                        <i class="fas fa-circle-check me-1"></i> Available ({{ book.available }})
+                      </span>
+                    {% else %}
+                      <span class="book-badge-stock badge-outstock">
+                        <i class="fas fa-circle-xmark me-1"></i> Out of Stock
+                      </span>
+                    {% endif %}
+                    <div class="book-price">${{ "%.2f"|format(book.price) }}</div>
+                  </div>
+                  <div class="mt-3">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary-landing w-100 text-center py-2" style="font-size: 0.95rem;">
+                      Borrow Book
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-4 w-100">
+            <p class="text-muted">No books currently featured as new arrivals.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Library Info & Policies ===== -->
+  <section class="py-5" id="info">
+    <div class="container py-5">
+      <h2 class="section-title section-title-center">Visitor Information</h2>
+      <p class="text-center text-muted mx-auto mb-5" style="max-width: 600px;">Plan your visit. Review our opening schedule, borrowing policies, and location details.</p>
+      
+      <div class="row g-4">
+        <!-- Opening Hours -->
+        <div class="col-md-6 col-lg-4">
+          <div class="info-card-landing">
+            <h4 class="mb-4 text-primary"><i class="fas fa-clock me-2"></i>Opening Hours</h4>
+            <ul class="info-list">
+              <li>
+                <span class="info-list-day">Monday – Friday</span>
+                <span class="info-list-time">08:00 AM – 08:00 PM</span>
+              </li>
+              <li>
+                <span class="info-list-day">Saturday</span>
+                <span class="info-list-time">09:00 AM – 05:00 PM</span>
+              </li>
+              <li>
+                <span class="info-list-day">Sunday</span>
+                <span class="info-list-time">Closed (Online Only)</span>
+              </li>
+              <li>
+                <span class="info-list-day">Public Holidays</span>
+                <span class="info-list-time">Closed</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Policies -->
+        <div class="col-md-6 col-lg-4">
+          <div class="info-card-landing">
+            <h4 class="mb-4 text-primary"><i class="fas fa-circle-info me-2"></i>Borrowing Rules</h4>
+            <ul class="info-list">
+              <li>
+                <span class="info-list-day">Loan Limit</span>
+                <span class="info-list-time">Up to 3 books at a time</span>
+              </li>
+              <li>
+                <span class="info-list-day">Loan Duration</span>
+                <span class="info-list-time">14 days per book</span>
+              </li>
+              <li>
+                <span class="info-list-day">Renewals</span>
+                <span class="info-list-time">1 extension allowed (7 days)</span>
+              </li>
+              <li>
+                <span class="info-list-day">Overdue Fine</span>
+                <span class="info-list-time">$0.50 per day per book</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Contact/Map -->
+        <div class="col-md-12 col-lg-4">
+          <div class="info-card-landing">
+            <h4 class="mb-4 text-primary"><i class="fas fa-location-dot me-2"></i>Contact Details</h4>
+            <div class="mb-3 d-flex align-items-start gap-2">
+              <i class="fas fa-map-marker-alt text-muted mt-1"></i>
+              <div>
+                <strong>Central Library</strong><br>
+                Institute of Science & Technology Campus,<br>
+                Block C, Level 2
+              </div>
+            </div>
+            <div class="mb-3 d-flex align-items-center gap-2">
+              <i class="fas fa-envelope text-muted"></i>
+              <span>library@institute.edu</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-phone text-muted"></i>
+              <span>+91 11-2345-6789 (Ext: 405)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer-landing">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="footer-brand">
+            <i class="fas fa-book-open"></i>
+            <span>Library</span>MS
+          </div>
+          <p>A comprehensive library information system for managing books catalog, member loans, search capabilities, and transaction records.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <h5 class="text-white mb-3">Quick Navigation</h5>
+          <ul class="footer-links">
+            <li><a href="#catalog">Search Catalog</a></li>
+            <li><a href="#features">Key Services</a></li>
+            <li><a href="#arrivals">New Arrivals</a></li>
+            <li><a href="#info">Visitor Info & Rules</a></li>
+          </ul>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <h5 class="text-white mb-3">Account Services</h5>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('auth.login') }}">Student & Faculty Login</a></li>
+            <li><a href="{{ url_for('auth.register') }}">New Member Registration</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Librarian / Admin Console</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="row footer-bottom align-items-center">
+        <div class="col-md-6 text-center text-md-start">
+          &copy; 2026 Institute of Science & Technology. All rights reserved.
+        </div>
+        <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+          <a href="#" class="text-secondary text-decoration-none me-3">Privacy Policy</a>
+          <a href="#" class="text-secondary text-decoration-none">Terms of Use</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

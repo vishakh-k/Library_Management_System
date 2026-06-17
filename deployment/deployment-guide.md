@@ -173,14 +173,14 @@ docker-compose --version
 ### 4.1 Install Java (Jenkins dependency)
 
 ```bash
-sudo apt install -y fontconfig openjdk-17-jre
+sudo apt install -y fontconfig openjdk-21-jre
 java -version
 ```
 
 ### 4.2 Add Jenkins repository & install
 
 ```bash
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | \
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key | \
     sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
 
 echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
@@ -299,8 +299,8 @@ FLASK_ENV=production
 # MySQL
 MYSQL_HOST=db
 MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=your-strong-root-password
+MYSQL_USER=lms_user
+MYSQL_PASSWORD=your-strong-password
 MYSQL_DB=library_db
 MYSQL_ROOT_PASSWORD=your-strong-root-password
 

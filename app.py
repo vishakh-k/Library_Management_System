@@ -104,15 +104,79 @@ def create_app(config_name=None):
     # ------------------------------------------------------------------
     @app.route('/')
     def index():
-        """Redirect the bare root based on role."""
-        from flask import redirect, url_for
+        """Render the landing page when not logged in, or redirect based on role."""
+        from flask import redirect, url_for, request
         from flask_login import current_user
         if current_user.is_authenticated:
             if current_user.role == 'admin':
                 return redirect(url_for('dashboard.index'))
             else:
                 return redirect(url_for('store.list_books'))
-        return redirect(url_for('auth.login'))
+        
+        search = request.args.get('search', '').strip()
+        books = []
+        arrivals = []
+        stats = {
+            'total_books': 0,
+            'available_books': 0,
+            'total_categories': 0,
+            'total_students': 0
+        }
+
+        try:
+            cur = mysql.connection.cursor()
+            
+            # 1. Fetch library stats
+            cur.execute("SELECT IFNULL(SUM(quantity), 0) AS total_books, IFNULL(SUM(available), 0) AS available_books FROM books")
+            book_stats = cur.fetchone()
+            if book_stats:
+                stats['total_books'] = book_stats['total_books']
+                stats['available_books'] = book_stats['available_books']
+                
+            cur.execute("SELECT COUNT(*) AS total_categories FROM categories")
+            cat_stats = cur.fetchone()
+            if cat_stats:
+                stats['total_categories'] = cat_stats['total_categories']
+                
+            cur.execute("SELECT COUNT(*) AS total_students FROM students")
+            student_stats = cur.fetchone()
+            if student_stats:
+                stats['total_students'] = student_stats['total_students']
+                
+            # 2. Fetch new arrivals (latest 4 books)
+            cur.execute(
+                "SELECT b.*, c.name AS category_name "
+                "FROM books b "
+                "LEFT JOIN categories c ON b.category_id = c.id "
+                "ORDER BY b.id DESC "
+                "LIMIT 4"
+            )
+            arrivals = cur.fetchall()
+            
+            # 3. Handle book search
+            if search:
+                search_param = f"%{search}%"
+                cur.execute(
+                    "SELECT b.*, c.name AS category_name "
+                    "FROM books b "
+                    "LEFT JOIN categories c ON b.category_id = c.id "
+                    "WHERE b.title LIKE %s OR b.author LIKE %s OR b.isbn LIKE %s "
+                    "ORDER BY b.title ASC",
+                    (search_param, search_param, search_param)
+                )
+                books = cur.fetchall()
+                
+            cur.close()
+        except Exception as e:
+            app.logger.error(f"Error loading landing page data: {str(e)}")
+            
+        return render_template(
+            'landing.html',
+            stats=stats,
+            arrivals=arrivals,
+            books=books,
+            search=search
+        )
 
     return app
 
